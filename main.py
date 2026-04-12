@@ -20,7 +20,7 @@ def clean_name(name: str):
 
 
 # =========================
-# 🎫 OUVRIR TICKET
+# 🎫 VIEW OUVRIR TICKET
 # =========================
 class TicketOpenView(discord.ui.View):
     def __init__(self):
@@ -34,17 +34,12 @@ class TicketOpenView(discord.ui.View):
 
         role = discord.utils.get(guild.roles, name="🔆Modérateur")
 
-        # =========================
-        # 📂 UTILISATION CATÉGORIE EXISTANTE
-        # =========================
         category = discord.utils.get(guild.categories, name="📩  //  Ticket")
-
         if category is None:
-            await interaction.response.send_message(
-                "❌ Catégorie '📩  //  Ticket' introuvable",
+            return await interaction.response.send_message(
+                "❌ Catégorie introuvable",
                 ephemeral=True
             )
-            return
 
         channel_name = f"ticket-{clean_name(user.name)}"
 
@@ -61,9 +56,6 @@ class TicketOpenView(discord.ui.View):
             overwrites=overwrites
         )
 
-        # =========================
-        # 💬 MESSAGE TICKET (INCHANGÉ)
-        # =========================
         embed = discord.Embed(
             description=
 f"""**Ticket ouvert par** {user.mention}
@@ -82,7 +74,6 @@ Décrivez votre problème puis attendez de recevoir une réponse.
             view=TicketCloseView()
         )
 
-        # message uniquement user
         await interaction.response.send_message(
             f"🎫 Ticket créé : {channel.mention}",
             ephemeral=True
@@ -122,6 +113,48 @@ class ConfirmCloseView(discord.ui.View):
 
         await interaction.message.delete()
         await interaction.response.send_message("❌ Annulé", ephemeral=True)
+
+
+# =========================
+# 💬 COMMANDE +EMBED
+# =========================
+@client.event
+async def on_message(message):
+
+    if message.author.bot:
+        return
+
+    guild = message.guild
+    role = discord.utils.get(guild.roles, name="🔆Modérateur")
+
+    # =========================
+    # +EMBED
+    # =========================
+    if message.content.startswith("+embed"):
+        
+        # vérification rôle
+        if role not in message.author.roles:
+            return await message.channel.send("❌ Tu n’as pas la permission d’utiliser cette commande.")
+
+        parts = message.content.split(" ", 1)
+
+        # si pas de texte
+        if len(parts) < 2:
+            return await message.channel.send(
+                "ℹ Utilisation : `+embed <texte>`"
+            )
+
+        text = parts[1]
+
+        embed = discord.Embed(
+            description=text,
+            color=discord.Color.blue()
+        )
+
+        await message.channel.send(embed=embed)
+
+
+    # (tu peux garder d'autres commandes ici)
 
 
 # =========================
