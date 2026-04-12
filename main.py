@@ -20,7 +20,7 @@ def clean_name(name: str):
 
 
 # =========================
-# 🎫 VIEW OUVRIR TICKET
+# 🎫 TICKETS - OUVRIR
 # =========================
 class TicketOpenView(discord.ui.View):
     def __init__(self):
@@ -112,7 +112,14 @@ class ConfirmCloseView(discord.ui.View):
     async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.message.delete()
-        await interaction.response.send_message("❌ Annulé", ephemeral=True)
+
+        embed = discord.Embed(
+            title="❌ Annulé",
+            description="La fermeture du ticket a été annulée.",
+            color=discord.Color.red()
+        )
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 # =========================
@@ -131,30 +138,37 @@ async def on_message(message):
     # +EMBED
     # =========================
     if message.content.startswith("+embed"):
-        
-        # vérification rôle
+
+        # ❌ pas le rôle
         if role not in message.author.roles:
-            return await message.channel.send("❌ Tu n’as pas la permission d’utiliser cette commande.")
+            embed = discord.Embed(
+                title="❌ Permission refusée",
+                description="Tu n’as pas la permission d’utiliser cette commande.",
+                color=discord.Color.red()
+            )
+            return await message.channel.send(embed=embed)
 
         parts = message.content.split(" ", 1)
 
-        # si pas de texte
+        # ❌ pas de texte
         if len(parts) < 2:
-            return await message.channel.send(
-                "ℹ Utilisation : `+embed <texte>`"
+
+            embed = discord.Embed(
+                title="ℹ Utilisation",
+                description="Utilisation : **+embed** `<texte>`",
+                color=discord.Color.orange()
             )
+            return await message.channel.send(embed=embed)
 
         text = parts[1]
 
+        # ✔ embed résultat
         embed = discord.Embed(
             description=text,
             color=discord.Color.blue()
         )
 
         await message.channel.send(embed=embed)
-
-
-    # (tu peux garder d'autres commandes ici)
 
 
 # =========================
