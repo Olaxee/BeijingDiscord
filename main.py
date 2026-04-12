@@ -9,17 +9,18 @@ intents.guilds = True
 
 client = discord.Client(intents=intents)
 
+
 # =========================
-# 🔧 UTILITAIRE CLEAN NOM
+# 🧼 CLEAN NOM SALON
 # =========================
 def clean_name(name: str):
     name = name.lower()
-    name = re.sub(r"[^a-z0-9\-]", "", name)
-    return name[:20]  # limite de sécurité
+    name = re.sub(r"[^a-z0-9]", "", name)
+    return name[:20]
 
 
 # =========================
-# 🎫 VIEW - OUVRIR TICKET
+# 🎫 OUVRIR TICKET
 # =========================
 class TicketOpenView(discord.ui.View):
     def __init__(self):
@@ -31,20 +32,18 @@ class TicketOpenView(discord.ui.View):
         guild = interaction.guild
         user = interaction.user
 
-        mod_role = discord.utils.get(guild.roles, name="🔆Modérateur")
+        role = discord.utils.get(guild.roles, name="🔆Modérateur")
 
-        category_name = "tickets"
-        category = discord.utils.get(guild.categories, name=category_name)
+        category = discord.utils.get(guild.categories, name="tickets")
         if category is None:
-            category = await guild.create_category(category_name)
+            category = await guild.create_category("tickets")
 
         channel_name = f"ticket-{clean_name(user.name)}"
 
-        # créer salon ticket
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=False),
             user: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True),
-            mod_role: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True),
+            role: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True),
             guild.me: discord.PermissionOverwrite(view_channel=True)
         }
 
@@ -54,30 +53,41 @@ class TicketOpenView(discord.ui.View):
             overwrites=overwrites
         )
 
-        # message dans salon ticket
+        # =========================
+        # 💬 MESSAGE DANS TICKET
+        # =========================
+        embed = discord.Embed(
+            title="🎫 Ticket ouvert",
+            description=f"""```
+@{user.name} @{role.name if role else "Modérateur"}
+
+Ticket ouvert par : @{user.name}
+
+Raison : Contacter le staff
+
+Merci d'avoir contacté le support.
+Décrivez votre problème puis attendez une réponse.
+```""",
+            color=discord.Color.green()
+        )
+
+        embed.set_footer(text="Système de tickets")
+
         await channel.send(
-            f"{user.mention} {mod_role.mention if mod_role else ''}\n\n"
-            f"**Ticket ouvert par** {user.mention}\n\n"
-            f"Raison : **Contacter le staff**\n\n"
-            f"Merci d'avoir contacté le support.\n"
-            f"Décrivez votre problème puis attendez de recevoir une réponse."
-            ,
+            content=f"{user.mention} {(role.mention if role else '')}",
+            embed=embed,
             view=TicketCloseView()
         )
 
-        # message dans salon panel
-        panel = discord.utils.get(guild.text_channels, name="📩・ticket")
-        if panel:
-            await panel.send(f"🎫 Ticket créé → {channel.mention}")
-
+        # ❌ PLUS DE MESSAGE PUBLIC (corrigé)
         await interaction.response.send_message(
-            f"🎫 Ticket créé : {channel.mention}",
-            ephemeral=True
+            f"🎫 Ton ticket a été créé : {channel.mention}",
+            ephemeral=True  # 👈 uniquement utilisateur
         )
 
 
 # =========================
-# 🔒 VIEW - FERMER TICKET
+# 🔒 FERMER TICKET
 # =========================
 class TicketCloseView(discord.ui.View):
     def __init__(self):
@@ -98,14 +108,14 @@ class ConfirmCloseView(discord.ui.View):
         super().__init__(timeout=30)
 
     @discord.ui.button(label="✔ Oui", style=discord.ButtonStyle.green)
-    async def confirm_yes(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.response.send_message("🔒 Fermeture du ticket... (5s)", ephemeral=False)
         await asyncio.sleep(5)
         await interaction.channel.delete()
 
     @discord.ui.button(label="❌ Non", style=discord.ButtonStyle.red)
-    async def confirm_no(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
 
         await interaction.message.delete()
         await interaction.response.send_message("❌ Annulé", ephemeral=True)
@@ -114,11 +124,12 @@ class ConfirmCloseView(discord.ui.View):
 # =========================
 # 📩 PANEL TICKETS
 # =========================
-async def send_ticket_panel():
+async def send_panel():
     await client.wait_until_ready()
 
     for guild in client.guilds:
         channel = discord.utils.get(guild.text_channels, name="📩・ticket")
+
         if channel:
             embed = discord.Embed(
                 title="🎫 Support & Tickets",
@@ -135,15 +146,15 @@ async def send_ticket_panel():
 
 
 # =========================
-# 🤖 BOT READY
+# 🤖 READY
 # =========================
 @client.event
 async def on_ready():
     print(f"Connecté en tant que {client.user}")
-    client.loop.create_task(send_ticket_panel())
+    client.loop.create_task(send_panel())
 
 
 # =========================
-# 🔧 TOKEN
+# 🔐 TOKEN
 # =========================
 client.run(os.getenv("TOKEN"))
