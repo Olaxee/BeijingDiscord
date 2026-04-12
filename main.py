@@ -35,12 +35,16 @@ class TicketOpenView(discord.ui.View):
         role = discord.utils.get(guild.roles, name="🔆Modérateur")
 
         # =========================
-        # 📁 CATÉGORIE MODIFIÉE ICI
+        # 📂 UTILISATION CATÉGORIE EXISTANTE
         # =========================
-        category = discord.utils.get(guild.categories, name="📩 // Ticket")
+        category = discord.utils.get(guild.categories, name="📩  //  Ticket")
 
         if category is None:
-            category = await guild.create_category("📩 // Ticket")
+            await interaction.response.send_message(
+                "❌ Catégorie '📩  //  Ticket' introuvable",
+                ephemeral=True
+            )
+            return
 
         channel_name = f"ticket-{clean_name(user.name)}"
 
@@ -58,7 +62,7 @@ class TicketOpenView(discord.ui.View):
         )
 
         # =========================
-        # 💬 MESSAGE EXACT DEMANDÉ
+        # 💬 MESSAGE TICKET (INCHANGÉ)
         # =========================
         embed = discord.Embed(
             description=
@@ -78,7 +82,7 @@ Décrivez votre problème puis attendez de recevoir une réponse.
             view=TicketCloseView()
         )
 
-        # message privé utilisateur
+        # message uniquement user
         await interaction.response.send_message(
             f"🎫 Ticket créé : {channel.mention}",
             ephemeral=True
