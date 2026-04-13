@@ -20,7 +20,7 @@ def clean_name(name: str):
 
 
 # =========================
-# 🎫 TICKETS - OUVRIR
+# 🎫 TICKETS
 # =========================
 class TicketOpenView(discord.ui.View):
     def __init__(self):
@@ -63,7 +63,7 @@ f"""**Ticket ouvert par** {user.mention}
 Raison : **Contacter le staff**
 
 Merci d'avoir contacté le support.
-Décrivez votre problème puis attendez de recevoir une réponse.
+Décrivez votre problème puis attendez une réponse.
 """,
             color=discord.Color.green()
         )
@@ -123,7 +123,7 @@ class ConfirmCloseView(discord.ui.View):
 
 
 # =========================
-# 💬 COMMANDE +EMBED
+# 💬 +EMBED ULTRA COMPLET
 # =========================
 @client.event
 async def on_message(message):
@@ -139,34 +139,62 @@ async def on_message(message):
     # =========================
     if message.content.startswith("+embed"):
 
-        # ❌ pas le rôle
+        # ❌ permission
         if role not in message.author.roles:
-            embed = discord.Embed(
-                title="❌ Permission refusée",
-                description="Tu n’as pas la permission d’utiliser cette commande.",
-                color=discord.Color.red()
+            return await message.channel.send(
+                embed=discord.Embed(
+                    title="❌ Permission refusée",
+                    description="Tu n’as pas la permission d’utiliser cette commande.",
+                    color=discord.Color.red()
+                )
             )
-            return await message.channel.send(embed=embed)
 
-        parts = message.content.split(" ", 1)
+        parts = message.content[len("+embed"):].strip().split("|")
 
-        # ❌ pas de texte
+        # =========================
+        # UTILISATION
+        # =========================
         if len(parts) < 2:
-
-            embed = discord.Embed(
-                title="ℹ Utilisation",
-                description="Utilisation : **+embed** `<texte>`",
-                color=discord.Color.orange()
+            return await message.channel.send(
+                embed=discord.Embed(
+                    title="ℹ Utilisation",
+                    description="Utilisation : **+embed** `<titre> | <description> | <couleur> | <image (optionnel)>`",
+                    color=discord.Color.orange()
+                )
             )
-            return await message.channel.send(embed=embed)
 
-        text = parts[1]
+        title = parts[0].strip() if len(parts) > 0 else ""
+        description = parts[1].strip() if len(parts) > 1 else ""
+        color_name = parts[2].strip().lower() if len(parts) > 2 else "blue"
+        image_url = parts[3].strip() if len(parts) > 3 else None
 
-        # ✔ embed résultat
+        # =========================
+        # COULEURS
+        # =========================
+        colors = {
+            "blue": discord.Color.blue(),
+            "red": discord.Color.red(),
+            "green": discord.Color.green(),
+            "yellow": discord.Color.gold(),
+            "orange": discord.Color.orange(),
+            "purple": discord.Color.purple()
+        }
+
+        color = colors.get(color_name, discord.Color.blue())
+
+        # =========================
+        # EMBED FINAL
+        # =========================
         embed = discord.Embed(
-            description=text,
-            color=discord.Color.blue()
+            title=title if title else None,
+            description=description,
+            color=color
         )
+
+        if image_url:
+            embed.set_image(url=image_url)
+
+        embed.set_footer(text=f"Créé par {message.author.name}")
 
         await message.channel.send(embed=embed)
 
