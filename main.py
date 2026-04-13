@@ -2,6 +2,7 @@ import discord
 import os
 import re
 import asyncio
+import shlex
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -122,7 +123,7 @@ class ConfirmCloseView(discord.ui.View):
 
 
 # =========================
-# 💬 +EMBED STRICT
+# 💬 +EMBED (FIX RETOURS LIGNE + PARSING PRO)
 # =========================
 @client.event
 async def on_message(message):
@@ -138,31 +139,31 @@ async def on_message(message):
     # =========================
     # ℹ AIDE
     # =========================
-    def send_help():
-        embed = discord.Embed(
+    def help_embed():
+        return discord.Embed(
             title="ℹ Utilisation +embed",
             description=(
-                "Utilisation :\n"
-                "**+embed <texte> <couleur> <en-tête> <footer> <image>**\n\n"
-                "⚠ Chaque champ DOIT être entre `< >`\n"
+                "Syntaxe :\n"
+                "**+embed \"texte\" \"couleur\" \"en-tête\" \"footer\" \"image\"**\n\n"
+                "✔ Les retours à la ligne fonctionnent\n"
+                "✔ Markdown autorisé\n"
+                "✔ Utilise `\"<->\"` pour ignorer un champ\n\n"
                 "Exemple :\n"
-                "`+embed <Hello> <#ff0000> <Titre> <Footer> <https://image.png>`\n\n"
-                "**Utilisez `<->` pour ignorer un champ**"
+                "`+embed \"Hello\\nWorld\" \"#ff0000\" \"Titre\" \"Footer\" \"https://image.png\"`"
             ),
             color=discord.Color.orange()
         )
-        return embed
 
     # =========================
-    # ❌ PAS DE RÔLE
+    # ❌ PAS DE ROLE
     # =========================
     if message.content.startswith("+embed") and role not in message.author.roles:
-
-        embed = discord.Embed(
-            description="❌ Tu n’as pas la permission d’utiliser cette commande.",
-            color=discord.Color.red()
+        return await message.channel.send(
+            embed=discord.Embed(
+                description="❌ Tu n’as pas la permission d’utiliser cette commande.",
+                color=discord.Color.red()
+            )
         )
-        return await message.channel.send(embed=embed)
 
     # =========================
     # +EMBED
@@ -171,28 +172,28 @@ async def on_message(message):
 
         content = message.content.replace("+embed", "").strip()
 
-        # si rien → help
         if content == "":
-            return await message.channel.send(embed=send_help())
+            return await message.channel.send(embed=help_embed())
 
-        # validation format < >
-        parts = re.findall(r"<(.*?)>", content)
+        try:
+            args = shlex.split(content)
+        except:
+            return await message.channel.send(embed=help_embed())
 
-        if len(parts) < 1:
-            return await message.channel.send(embed=send_help())
+        if len(args) < 1:
+            return await message.channel.send(embed=help_embed())
 
-        # récupération sécurisée
-        text = parts[0] if len(parts) > 0 else "<->"
-        color = parts[1] if len(parts) > 1 else "<->"
-        header = parts[2] if len(parts) > 2 else "<->"
-        footer = parts[3] if len(parts) > 3 else "<->"
-        image = parts[4] if len(parts) > 4 else "<->"
+        text = args[0] if len(args) > 0 else "<->"
+        color = args[1] if len(args) > 1 else "<->"
+        header = args[2] if len(args) > 2 else "<->"
+        footer = args[3] if len(args) > 3 else "<->"
+        image = args[4] if len(args) > 4 else "<->"
 
         embed = discord.Embed()
 
-        # 📝 TEXT
+        # 📝 TEXT (RETOURS LIGNE OK)
         if text != "<->":
-            embed.description = text
+            embed.description = text.replace("\\n", "\n")
 
         # 🎨 COLOR
         try:
@@ -208,7 +209,7 @@ async def on_message(message):
         if image != "<->":
             embed.set_thumbnail(url=image)
 
-        # 🤖 AUTHOR (HEADER)
+        # 🤖 AUTHOR HEADER
         embed.set_author(
             name=header if header != "<->" else "Embed",
             icon_url=bot_user.display_avatar.url
@@ -227,7 +228,6 @@ async def send_panel():
         channel = discord.utils.get(guild.text_channels, name="📩・ticket")
 
         if channel:
-
             embed = discord.Embed(
                 title="🎫 Support & Tickets",
                 description=(
