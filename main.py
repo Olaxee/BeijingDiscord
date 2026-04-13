@@ -8,7 +8,7 @@ from datetime import datetime
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
-intents.members = True  # 🔥 IMPORTANT pour join
+intents.members = True
 
 client = discord.Client(intents=intents)
 
@@ -23,7 +23,7 @@ def clean_name(name: str):
 
 
 # =========================
-# 🎫 TICKETS (inchangé)
+# 🎫 TICKETS
 # =========================
 class TicketOpenView(discord.ui.View):
     def __init__(self):
@@ -123,7 +123,7 @@ class ConfirmCloseView(discord.ui.View):
 
 
 # =========================
-# 💬 +EMBED (inchangé)
+# 💬 +EMBED
 # =========================
 @client.event
 async def on_message(message):
@@ -136,17 +136,24 @@ async def on_message(message):
 
     bot_user = guild.me if guild else client.user
 
-    # HELP
+    # =========================
+    # ℹ HELP
+    # =========================
     def help_embed():
         return discord.Embed(
             title="ℹ Utilisation +embed",
             description=(
                 "Syntaxe :\n"
-                "**+embed \"texte\" \"couleur\" \"en-tête\" \"footer\" \"image\"**\n"
+                "**+embed \"texte\" \"couleur\" \"en-tête\" \"footer\" \"image\"**\n\n"
+                "👉 Met `<->` pour ignorer un champ\n"
+                "👉 Si pas d’en-tête → aucun author affiché"
             ),
             color=discord.Color.orange()
         )
 
+    # =========================
+    # ❌ NO ROLE
+    # =========================
     if message.content.startswith("+embed") and role not in message.author.roles:
         return await message.channel.send(
             embed=discord.Embed(
@@ -155,6 +162,9 @@ async def on_message(message):
             )
         )
 
+    # =========================
+    # +EMBED
+    # =========================
     if message.content.startswith("+embed"):
 
         content = message.content.replace("+embed", "").strip()
@@ -175,71 +185,36 @@ async def on_message(message):
 
         embed = discord.Embed()
 
+        # 📝 TEXT
         if text != "<->":
             embed.description = text.replace("\\n", "\n")
 
+        # 🎨 COLOR
         try:
             embed.color = int(color.replace("#", ""), 16) if color != "<->" else discord.Color.blue()
         except:
             embed.color = discord.Color.blue()
 
+        # 🧾 FOOTER
         if footer != "<->":
             embed.set_footer(text=footer)
 
+        # 🖼 IMAGE
         if image != "<->":
             embed.set_thumbnail(url=image)
 
-        embed.set_author(
-            name=header if header != "<->" else "Embed",
-            icon_url=bot_user.display_avatar.url
-        )
+        # 🤖 AUTHOR (UNIQUEMENT SI HEADER EXISTE)
+        if header != "<->":
+            embed.set_author(
+                name=header,
+                icon_url=bot_user.display_avatar.url
+            )
 
         await message.channel.send(embed=embed)
 
 
 # =========================
-# 👋 SYSTEME WELCOME JOIN
-# =========================
-@client.event
-async def on_member_join(member):
-
-    guild = member.guild
-
-    channel = discord.utils.get(guild.text_channels, name="🖼️・join")
-    if channel is None:
-        return
-
-    # 📊 stats serveur
-    member_count = guild.member_count
-
-    # ⏰ heure actuelle
-    now = datetime.now().strftime("%H:%M")
-
-    # 🎨 embed welcome
-    embed = discord.Embed(
-        description=f"Bienvenue {member.mention} sur **Beijing 🏯🏮**. Nous sommes {member_count} membres.",
-        color=0xFF1D8D
-    )
-
-    # 🟣 author = en-tête
-    embed.set_author(
-        name="Bienvenue.",
-        icon_url=member.display_avatar.url
-    )
-
-    # 🧾 footer
-    embed.set_footer(
-        text=f"Nouveau membre #{member_count} • Aujourd’hui à {now}"
-    )
-
-    # 🖼 avatar à droite
-    embed.set_thumbnail(url=member.display_avatar.url)
-
-    await channel.send(embed=embed)
-
-
-# =========================
-# 📩 PANEL TICKETS
+# 📩 PANEL TICKETS (FIX)
 # =========================
 async def send_panel():
     await client.wait_until_ready()
@@ -248,13 +223,52 @@ async def send_panel():
         channel = discord.utils.get(guild.text_channels, name="📩・ticket")
 
         if channel:
+
             embed = discord.Embed(
                 title="🎫 Support & Tickets",
-                description="Ouvrez un ticket ci-dessous",
+                description=(
+                    "Avez vous besoin d'aide ?\n"
+                    "Avez vous besoin de contacter le staff ?\n"
+                    "Avez vous besoin d'info ?\n\n"
+                    "Ouvrez un ticket ci-dessous"
+                ),
                 color=discord.Color.green()
             )
 
             await channel.send(embed=embed, view=TicketOpenView())
+
+
+# =========================
+# 👋 JOIN SYSTEM
+# =========================
+@client.event
+async def on_member_join(member):
+
+    channel = discord.utils.get(member.guild.text_channels, name="🖼️・join")
+    if not channel:
+        return
+
+    guild = member.guild
+    count = guild.member_count
+    now = datetime.now().strftime("%H:%M")
+
+    embed = discord.Embed(
+        description=f"Bienvenue {member.mention} sur **Beijing 🏯🏮**. Nous sommes {count} membres.",
+        color=0xFF1D8D
+    )
+
+    embed.set_author(
+        name="Bienvenue.",
+        icon_url=member.display_avatar.url
+    )
+
+    embed.set_footer(
+        text=f"Nouveau membre #{count} • Aujourd’hui à {now}"
+    )
+
+    embed.set_thumbnail(url=member.display_avatar.url)
+
+    await channel.send(embed=embed)
 
 
 # =========================
