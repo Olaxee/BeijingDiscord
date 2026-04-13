@@ -4,6 +4,7 @@ import re
 import asyncio
 import shlex
 from datetime import datetime
+from zoneinfo import ZoneInfo  # 🔥 FIX HEURE
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -136,35 +137,24 @@ async def on_message(message):
 
     bot_user = guild.me if guild else client.user
 
-    # =========================
-    # ℹ HELP
-    # =========================
     def help_embed():
         return discord.Embed(
             title="ℹ Utilisation +embed",
             description=(
-                "Syntaxe :\n"
-                "**+embed \"texte\" \"couleur\" \"en-tête\" \"footer\" \"image\"**\n\n"
-                "👉 Met `<->` pour ignorer un champ\n"
-                "👉 Si pas d’en-tête → aucun author affiché"
+                "**+embed \"texte\" \"couleur\" \"en-tête\" \"footer\" \"image\"**\n"
+                "👉 `<->` pour ignorer"
             ),
             color=discord.Color.orange()
         )
 
-    # =========================
-    # ❌ NO ROLE
-    # =========================
     if message.content.startswith("+embed") and role not in message.author.roles:
         return await message.channel.send(
             embed=discord.Embed(
-                description="❌ Tu n’as pas la permission d’utiliser cette commande.",
+                description="❌ Tu n’as pas la permission.",
                 color=discord.Color.red()
             )
         )
 
-    # =========================
-    # +EMBED
-    # =========================
     if message.content.startswith("+embed"):
 
         content = message.content.replace("+embed", "").strip()
@@ -185,25 +175,20 @@ async def on_message(message):
 
         embed = discord.Embed()
 
-        # 📝 TEXT
         if text != "<->":
             embed.description = text.replace("\\n", "\n")
 
-        # 🎨 COLOR
         try:
             embed.color = int(color.replace("#", ""), 16) if color != "<->" else discord.Color.blue()
         except:
             embed.color = discord.Color.blue()
 
-        # 🧾 FOOTER
         if footer != "<->":
             embed.set_footer(text=footer)
 
-        # 🖼 IMAGE
         if image != "<->":
             embed.set_thumbnail(url=image)
 
-        # 🤖 AUTHOR (UNIQUEMENT SI HEADER EXISTE)
         if header != "<->":
             embed.set_author(
                 name=header,
@@ -214,32 +199,7 @@ async def on_message(message):
 
 
 # =========================
-# 📩 PANEL TICKETS (FIX)
-# =========================
-async def send_panel():
-    await client.wait_until_ready()
-
-    for guild in client.guilds:
-        channel = discord.utils.get(guild.text_channels, name="📩・ticket")
-
-        if channel:
-
-            embed = discord.Embed(
-                title="🎫 Support & Tickets",
-                description=(
-                    "Avez vous besoin d'aide ?\n"
-                    "Avez vous besoin de contacter le staff ?\n"
-                    "Avez vous besoin d'info ?\n\n"
-                    "Ouvrez un ticket ci-dessous"
-                ),
-                color=discord.Color.green()
-            )
-
-            await channel.send(embed=embed, view=TicketOpenView())
-
-
-# =========================
-# 👋 JOIN SYSTEM
+# 👋 JOIN SYSTEM (FIX HEURE 🇫🇷)
 # =========================
 @client.event
 async def on_member_join(member):
@@ -250,7 +210,9 @@ async def on_member_join(member):
 
     guild = member.guild
     count = guild.member_count
-    now = datetime.now().strftime("%H:%M")
+
+    # 🔥 HEURE FRANCE FIX
+    now = datetime.now(ZoneInfo("Europe/Paris")).strftime("%H:%M")
 
     embed = discord.Embed(
         description=f"Bienvenue {member.mention} sur **Beijing 🏯🏮**. Nous sommes {count} membres.",
@@ -269,6 +231,30 @@ async def on_member_join(member):
     embed.set_thumbnail(url=member.display_avatar.url)
 
     await channel.send(embed=embed)
+
+
+# =========================
+# 📩 PANEL
+# =========================
+async def send_panel():
+    await client.wait_until_ready()
+
+    for guild in client.guilds:
+        channel = discord.utils.get(guild.text_channels, name="📩・ticket")
+
+        if channel:
+            embed = discord.Embed(
+                title="🎫 Support & Tickets",
+                description=(
+                    "Avez vous besoin d'aide ?\n"
+                    "Avez vous besoin de contacter le staff ?\n"
+                    "Avez vous besoin d'info ?\n\n"
+                    "Ouvrez un ticket ci-dessous"
+                ),
+                color=discord.Color.green()
+            )
+
+            await channel.send(embed=embed, view=TicketOpenView())
 
 
 # =========================
