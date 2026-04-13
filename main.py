@@ -123,7 +123,7 @@ class ConfirmCloseView(discord.ui.View):
 
 
 # =========================
-# 💬 +EMBED PRO (STYLE DISCORD)
+# 💬 +EMBED PRO HEADER STYLE
 # =========================
 @client.event
 async def on_message(message):
@@ -133,6 +133,8 @@ async def on_message(message):
 
     guild = message.guild
     role = discord.utils.get(guild.roles, name="🔆Modérateur")
+
+    bot_user = message.guild.me if message.guild else client.user
 
     # =========================
     # ℹ AIDE
@@ -171,36 +173,37 @@ async def on_message(message):
         footer = args[3] if len(args) > 3 else "<->"
         image = args[4] if len(args) > 4 else "<->"
 
-        # =========================
-        # 🎨 EMBED STYLE PRO
-        # =========================
         embed = discord.Embed()
 
-        # 🟦 EN-TÊTE (VRAI TITLE EN HAUT)
+        # 🟦 HEADER (petit en haut via title)
         if header != "<->":
             embed.title = header
 
-        # 📝 TEXTE À GAUCHE
+        # 🧠 TEXTE
         if text != "<->":
             embed.description = text
 
         # 🎨 COULEUR
-        if color != "<->":
-            try:
-                embed.color = int(color.replace("#", ""), 16)
-            except:
-                embed.color = discord.Color.blue()
-        else:
+        try:
+            embed.color = int(color.replace("#", ""), 16) if color != "<->" else discord.Color.blue()
+        except:
             embed.color = discord.Color.blue()
 
-        # 📌 FOOTER
+        # 🧾 FOOTER
         if footer != "<->":
             embed.set_footer(text=footer)
 
-        # 🖼 IMAGE À DROITE (IMPORTANT)
-        # 👉 thumbnail = rendu "colonne droite"
+        # 🖼 IMAGE À DROITE (thumbnail = style Discord propre)
         if image != "<->":
             embed.set_thumbnail(url=image)
+
+        # =========================
+        # 🤖 PP DU BOT + HEADER STYLE
+        # =========================
+        embed.set_author(
+            name=header if header != "<->" else "Embed",
+            icon_url=bot_user.display_avatar.url
+        )
 
         await message.channel.send(embed=embed)
 
@@ -215,6 +218,7 @@ async def send_panel():
         channel = discord.utils.get(guild.text_channels, name="📩・ticket")
 
         if channel:
+
             embed = discord.Embed(
                 title="🎫 Support & Tickets",
                 description=(
