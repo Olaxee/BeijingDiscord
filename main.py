@@ -114,8 +114,7 @@ class ConfirmCloseView(discord.ui.View):
         await interaction.message.delete()
 
         embed = discord.Embed(
-            title="❌ Annulé",
-            description="La fermeture du ticket a été annulée.",
+            description="❌ Annulé : la fermeture du ticket a été annulée.",
             color=discord.Color.red()
         )
 
@@ -123,7 +122,7 @@ class ConfirmCloseView(discord.ui.View):
 
 
 # =========================
-# 💬 +EMBED PRO HEADER STYLE
+# 💬 +EMBED (HEADER = AUTHOR UNIQUEMENT)
 # =========================
 @client.event
 async def on_message(message):
@@ -134,7 +133,7 @@ async def on_message(message):
     guild = message.guild
     role = discord.utils.get(guild.roles, name="🔆Modérateur")
 
-    bot_user = message.guild.me if message.guild else client.user
+    bot_user = guild.me if guild else client.user
 
     # =========================
     # ℹ AIDE
@@ -142,10 +141,10 @@ async def on_message(message):
     if message.content.lower() == "+embed":
 
         embed = discord.Embed(
-            title="ℹ Utilisation",
             description=(
-                "Utilisation : **+embed** `<texte>` `<couleur>` `<en-tête>` `<footer>` `<image>`\n\n"
-                "*Si vous ne voulez pas un champ : `<->`*"
+                "ℹ **Utilisation**\n\n"
+                "**+embed** `<texte>` `<couleur>` `<en-tête>` `<footer>` `<image>`\n\n"
+                "*Utilise `<->` pour ignorer un champ*"
             ),
             color=discord.Color.orange()
         )
@@ -159,8 +158,7 @@ async def on_message(message):
 
         if role not in message.author.roles:
             embed = discord.Embed(
-                title="❌ Permission refusée",
-                description="Tu n’as pas la permission d’utiliser cette commande.",
+                description="❌ Tu n’as pas la permission d’utiliser cette commande.",
                 color=discord.Color.red()
             )
             return await message.channel.send(embed=embed)
@@ -175,11 +173,7 @@ async def on_message(message):
 
         embed = discord.Embed()
 
-        # 🟦 HEADER (petit en haut via title)
-        if header != "<->":
-            embed.title = header
-
-        # 🧠 TEXTE
+        # 📝 TEXTE
         if text != "<->":
             embed.description = text
 
@@ -193,12 +187,12 @@ async def on_message(message):
         if footer != "<->":
             embed.set_footer(text=footer)
 
-        # 🖼 IMAGE À DROITE (thumbnail = style Discord propre)
+        # 🖼 IMAGE À DROITE
         if image != "<->":
             embed.set_thumbnail(url=image)
 
         # =========================
-        # 🤖 PP DU BOT + HEADER STYLE
+        # 🤖 HEADER = AUTHOR (PP + NOM)
         # =========================
         embed.set_author(
             name=header if header != "<->" else "Embed",
@@ -209,7 +203,7 @@ async def on_message(message):
 
 
 # =========================
-# 📩 PANEL
+# 📩 PANEL TICKETS
 # =========================
 async def send_panel():
     await client.wait_until_ready()
