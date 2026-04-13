@@ -114,7 +114,7 @@ class ConfirmCloseView(discord.ui.View):
         await interaction.message.delete()
 
         embed = discord.Embed(
-            description="❌ Annulé : la fermeture du ticket a été annulée.",
+            description="❌ Annulé : fermeture du ticket annulée.",
             color=discord.Color.red()
         )
 
@@ -122,7 +122,7 @@ class ConfirmCloseView(discord.ui.View):
 
 
 # =========================
-# 💬 +EMBED (HEADER = AUTHOR UNIQUEMENT)
+# 💬 +EMBED STRICT
 # =========================
 @client.event
 async def on_message(message):
@@ -138,46 +138,63 @@ async def on_message(message):
     # =========================
     # ℹ AIDE
     # =========================
-    if message.content.lower() == "+embed":
-
+    def send_help():
         embed = discord.Embed(
+            title="ℹ Utilisation +embed",
             description=(
-                "ℹ **Utilisation**\n\n"
-                "**+embed** `<texte>` `<couleur>` `<en-tête>` `<footer>` `<image>`\n\n"
-                "*Utilise `<->` pour ignorer un champ*"
+                "Utilisation :\n"
+                "**+embed <texte> <couleur> <en-tête> <footer> <image>**\n\n"
+                "⚠ Chaque champ DOIT être entre `< >`\n"
+                "Exemple :\n"
+                "`+embed <Hello> <#ff0000> <Titre> <Footer> <https://image.png>`\n\n"
+                "**Utilisez `<->` pour ignorer un champ**"
             ),
             color=discord.Color.orange()
         )
+        return embed
 
+    # =========================
+    # ❌ PAS DE RÔLE
+    # =========================
+    if message.content.startswith("+embed") and role not in message.author.roles:
+
+        embed = discord.Embed(
+            description="❌ Tu n’as pas la permission d’utiliser cette commande.",
+            color=discord.Color.red()
+        )
         return await message.channel.send(embed=embed)
 
     # =========================
-    # 🔐 PERMISSION
+    # +EMBED
     # =========================
     if message.content.startswith("+embed"):
 
-        if role not in message.author.roles:
-            embed = discord.Embed(
-                description="❌ Tu n’as pas la permission d’utiliser cette commande.",
-                color=discord.Color.red()
-            )
-            return await message.channel.send(embed=embed)
+        content = message.content.replace("+embed", "").strip()
 
-        args = message.content.replace("+embed ", "").split(" ")
+        # si rien → help
+        if content == "":
+            return await message.channel.send(embed=send_help())
 
-        text = args[0] if len(args) > 0 else "<->"
-        color = args[1] if len(args) > 1 else "<->"
-        header = args[2] if len(args) > 2 else "<->"
-        footer = args[3] if len(args) > 3 else "<->"
-        image = args[4] if len(args) > 4 else "<->"
+        # validation format < >
+        parts = re.findall(r"<(.*?)>", content)
+
+        if len(parts) < 1:
+            return await message.channel.send(embed=send_help())
+
+        # récupération sécurisée
+        text = parts[0] if len(parts) > 0 else "<->"
+        color = parts[1] if len(parts) > 1 else "<->"
+        header = parts[2] if len(parts) > 2 else "<->"
+        footer = parts[3] if len(parts) > 3 else "<->"
+        image = parts[4] if len(parts) > 4 else "<->"
 
         embed = discord.Embed()
 
-        # 📝 TEXTE
+        # 📝 TEXT
         if text != "<->":
             embed.description = text
 
-        # 🎨 COULEUR
+        # 🎨 COLOR
         try:
             embed.color = int(color.replace("#", ""), 16) if color != "<->" else discord.Color.blue()
         except:
@@ -187,13 +204,11 @@ async def on_message(message):
         if footer != "<->":
             embed.set_footer(text=footer)
 
-        # 🖼 IMAGE À DROITE
+        # 🖼 IMAGE
         if image != "<->":
             embed.set_thumbnail(url=image)
 
-        # =========================
-        # 🤖 HEADER = AUTHOR (PP + NOM)
-        # =========================
+        # 🤖 AUTHOR (HEADER)
         embed.set_author(
             name=header if header != "<->" else "Embed",
             icon_url=bot_user.display_avatar.url
@@ -203,7 +218,7 @@ async def on_message(message):
 
 
 # =========================
-# 📩 PANEL TICKETS
+# 📩 PANEL
 # =========================
 async def send_panel():
     await client.wait_until_ready()
