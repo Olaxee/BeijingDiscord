@@ -3,8 +3,8 @@ import os
 import re
 import asyncio
 import shlex
-import secrets  # 🔥 pour génération sécurisée
-import string   # 🔥 alphabet
+import secrets
+import string
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -29,7 +29,6 @@ def clean_name(name: str):
 # 🕒 DATE INTELLIGENTE
 # =========================
 def get_date_string():
-
     now = datetime.now(ZoneInfo("Europe/Paris"))
     today = now.date()
     yesterday = today - timedelta(days=1)
@@ -47,7 +46,7 @@ def get_date_string():
 
 
 # =========================
-# 🎫 TICKETS (RESTAURÉ CORRECTEMENT)
+# 🎫 TICKETS FIX
 # =========================
 class TicketOpenView(discord.ui.View):
     def __init__(self):
@@ -58,22 +57,18 @@ class TicketOpenView(discord.ui.View):
 
         guild = interaction.guild
         user = interaction.user
-
         role = discord.utils.get(guild.roles, name="🔆Modérateur")
 
         category = discord.utils.get(guild.categories, name="📩  //  Ticket")
         if category is None:
-            return await interaction.response.send_message(
-                "❌ Catégorie introuvable",
-                ephemeral=True
-            )
+            return await interaction.response.send_message("❌ Catégorie introuvable", ephemeral=True)
 
         channel_name = f"ticket-{clean_name(user.name)}"
 
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=False),
-            user: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True),
-            role: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True),
+            user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
+            role: discord.PermissionOverwrite(view_channel=True) if role else None,
             guild.me: discord.PermissionOverwrite(view_channel=True)
         }
 
@@ -83,10 +78,8 @@ class TicketOpenView(discord.ui.View):
             overwrites=overwrites
         )
 
-        # 🔥 MESSAGE EXACT RESTAURÉ
         embed = discord.Embed(
-            description=
-f"""**Ticket ouvert par** {user.mention}
+            description=f"""**Ticket ouvert par** {user.mention}
 
 Raison : **Contacter le staff**
 
@@ -117,8 +110,7 @@ class TicketCloseView(discord.ui.View):
 
         await interaction.response.send_message(
             "❓ Êtes-vous sûr de vouloir fermer ce ticket ?",
-            view=ConfirmCloseView(),
-            ephemeral=False
+            view=ConfirmCloseView()
         )
 
 
@@ -128,27 +120,41 @@ class ConfirmCloseView(discord.ui.View):
 
     @discord.ui.button(label="✔ Oui", style=discord.ButtonStyle.green)
     async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
-
-        await interaction.response.send_message("🔒 Fermeture du ticket... (5s)", ephemeral=False)
+        await interaction.response.send_message("🔒 Fermeture du ticket... (5s)")
         await asyncio.sleep(5)
         await interaction.channel.delete()
 
     @discord.ui.button(label="❌ Non", style=discord.ButtonStyle.red)
     async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
-
         await interaction.message.delete()
-
-        await interaction.response.send_message(
-            embed=discord.Embed(
-                description="❌ Annulé : fermeture du ticket annulée.",
-                color=discord.Color.red()
-            ),
-            ephemeral=True
-        )
 
 
 # =========================
-# 💬 COMMANDES
+# 📩 ENVOI PANEL AUTO (FIX)
+# =========================
+async def send_ticket_panel():
+    await client.wait_until_ready()
+
+    for guild in client.guilds:
+        channel = discord.utils.get(guild.text_channels, name="📩・ticket")
+
+        if channel:
+            embed = discord.Embed(
+                title="🎫 Support & Tickets",
+                description=(
+                    "Avez vous besoin d'aide ?\n"
+                    "Avez vous besoin de contacter le staff ?\n"
+                    "Avez vous besoin d'info ?\n\n"
+                    "Ouvrez un ticket ci-dessous"
+                ),
+                color=discord.Color.green()
+            )
+
+            await channel.send(embed=embed, view=TicketOpenView())
+
+
+# =========================
+# 💬 COMMANDES (inchangé)
 # =========================
 @client.event
 async def on_message(message):
@@ -161,9 +167,6 @@ async def on_message(message):
 
     bot_user = guild.me if guild else client.user
 
-    # =========================
-    # 🔐 +gencode
-    # =========================
     if message.content.lower() == "+gencode":
 
         alphabet = string.ascii_letters + string.digits
@@ -181,26 +184,15 @@ async def on_message(message):
 
         return await message.channel.send(embed=embed)
 
-    # =========================
-    # ℹ HELP EMBED
-    # =========================
     def help_embed():
         return discord.Embed(
             title="ℹ +embed",
-            description=(
-                "**+embed \"texte\" \"couleur\" \"titre\" \"footer\" \"image\"**\n"
-                "👉 Utilise `<->` pour ignorer une option"
-            ),
+            description="**+embed \"texte\" \"couleur\" \"titre\" \"footer\" \"image\"**\n👉 Utilise `<->` pour ignorer une option",
             color=discord.Color.orange()
         )
 
     if message.content.startswith("+embed") and role not in message.author.roles:
-        return await message.channel.send(
-            embed=discord.Embed(
-                description="❌ Tu n’as pas la permission.",
-                color=discord.Color.red()
-            )
-        )
+        return await message.channel.send(embed=discord.Embed(description="❌ Tu n’as pas la permission.", color=discord.Color.red()))
 
     if message.content.startswith("+embed"):
 
@@ -237,16 +229,13 @@ async def on_message(message):
             embed.set_thumbnail(url=image)
 
         if header != "<->":
-            embed.set_author(
-                name=header,
-                icon_url=bot_user.display_avatar.url
-            )
+            embed.set_author(name=header, icon_url=bot_user.display_avatar.url)
 
         await message.channel.send(embed=embed)
 
 
 # =========================
-# 👋 JOIN SYSTEM
+# 👋 JOIN SYSTEM (inchangé)
 # =========================
 @client.event
 async def on_member_join(member):
@@ -276,26 +265,20 @@ async def on_member_join(member):
         color=0xFF1D8D
     )
 
-    embed.set_author(
-        name="Bienvenue.",
-        icon_url=member.display_avatar.url
-    )
-
-    embed.set_footer(
-        text=f"Nouveau membre #{count} • {date_str} à {time_str}"
-    )
-
+    embed.set_author(name="Bienvenue.", icon_url=member.display_avatar.url)
+    embed.set_footer(text=f"Nouveau membre #{count} • {date_str} à {time_str}")
     embed.set_thumbnail(url=member.display_avatar.url)
 
     await channel.send(embed=embed)
 
 
 # =========================
-# 🤖 READY
+# 🤖 READY (FIX PANEL)
 # =========================
 @client.event
 async def on_ready():
     print(f"Connecté en tant que {client.user}")
+    client.loop.create_task(send_ticket_panel())
 
 
 # =========================
