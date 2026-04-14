@@ -47,7 +47,7 @@ def get_date_string():
 
 
 # =========================
-# 🎫 TICKETS (inchangé)
+# 🎫 TICKETS (RESTAURÉ CORRECTEMENT)
 # =========================
 class TicketOpenView(discord.ui.View):
     def __init__(self):
@@ -83,6 +83,7 @@ class TicketOpenView(discord.ui.View):
             overwrites=overwrites
         )
 
+        # 🔥 MESSAGE EXACT RESTAURÉ
         embed = discord.Embed(
             description=
 f"""**Ticket ouvert par** {user.mention}
@@ -161,12 +162,12 @@ async def on_message(message):
     bot_user = guild.me if guild else client.user
 
     # =========================
-    # 🔐 +gencode (NOUVEAU)
+    # 🔐 +gencode
     # =========================
     if message.content.lower() == "+gencode":
 
-        alphabet = string.ascii_letters + string.digits  # a-z A-Z 0-9
-        length = secrets.randbelow(9) + 16  # 16 → 24
+        alphabet = string.ascii_letters + string.digits
+        length = secrets.randbelow(9) + 16
 
         code = ''.join(secrets.choice(alphabet) for _ in range(length))
 
@@ -245,7 +246,7 @@ async def on_message(message):
 
 
 # =========================
-# 👋 JOIN SYSTEM (inchangé)
+# 👋 JOIN SYSTEM
 # =========================
 @client.event
 async def on_member_join(member):
