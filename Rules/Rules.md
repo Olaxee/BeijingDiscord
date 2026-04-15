@@ -1,7 +1,7 @@
 ## [⚠] Avant de lire les règles du serveur, prenez connaissance de ceci. [⚠]
 ###### Les règles de notre serveur sont littéralement celles de la [Charte d'utilisation de la communauté Discord](https://discord.com/guidelines), réécrites comme si nous en étions les auteurs, afin que toutes les règles concernant la sexualité soient également applicables aux personnes de +18 ans. Nous avons aussi ajouté quelques précisions.
 ## [⚠] Merci d’avoir lu ceci, vous pouvez maintenant consulter les règles de notre serveur. [⚠]
-# Règles du serveur [Beijing 🏯🏮](discord.gg/8xBBW975VX)
+# Règles du serveur [Beijing 🏯🏮](https://discord.gg/8xBBW975VX)
 ## Respectez autrui
 
 ### 1. N'encouragez pas le harcèlement, ne l'organisez pas, et n'y prenez pas part. Nous ne tolérons aucun type de harcèlement, notamment le harcèlement sexuel, ni le contournement de bannissement ou de blocage, ni le fait de rejoindre notre serveurs de façon coordonnée dans le but de harceler les membres, un comportement parfois appelé « raid de serveur ».
@@ -82,7 +82,7 @@
 ### Citation de la [Charte d'Utilisation de la Communauté Discord](https://discord.com/guidelines) :
 ### Cette charte évolue avec le temps.
 ### Cela signifie que nous pouvons prendre des mesures à l'encontre d'un compte, d'un serveur ou d'un contenu qui enfreint les idées promulguées par cette charte lorsque nous rencontrons une nouvelle menace ou nuisance, même si celle-ci n'est pas encore explicitement incluse dans la version actuelle de la charte.
-### [Nous vous disons] : ⚠ Cette charte est celle de [Discord](https://discord.com/guidelines). Elle à été réecrit le 14/04/26 à 1:18, pour notre serveur [Beijing 🏯🏮](discord.gg/8xBBW975VX), elle ne sera donc pas à jour correctement, consultez la [Charte d'Utilisation de la Communauté Discord](https://discord.com/guidelines) pour voir la vrai page mise à jour.
+### [Nous vous disons] : ⚠ Cette charte est celle de [Discord](https://discord.com/guidelines). Elle à été réecrit le 14/04/26 à 1:18, pour notre serveur [Beijing 🏯🏮](https://discord.gg/8xBBW975VX), elle ne sera donc pas à jour correctement, consultez la [Charte d'Utilisation de la Communauté Discord](https://discord.com/guidelines) pour voir la vrai page mise à jour.
 
 ### [Discord parle]
 ### Nous nous efforçons de vous informer lorsque nous mettons cette charte à jour, mais c'est à vous qu'il revient d'en respecter les fondements et d'utiliser Discord de façon responsable : faites en sorte que Discord reste un endroit sûr, et aidez-nous à assurer qu'il soit l'endroit idéal pour cultiver des amitiés autour du plaisir des jeux. Merci de votre coopération.‍
