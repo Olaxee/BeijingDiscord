@@ -2,14 +2,12 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Rules Live Sync</title>
+  <title>Rules</title>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    html {
-      zoom: 150%;
-    }
+    html { zoom: 150%; }
 
     body {
       font-family: Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
@@ -19,29 +17,14 @@
       transition: background-color 0.35s ease, color 0.35s ease;
     }
 
-    body.dark { background:#0f0f0f; color:white; }
-    body.light { background:#ffffff; color:#111; }
-    body.amoled { background:#000000; color:white; }
+    body.dark { background: #0f0f0f; color: white; }
+    body.light { background: #ffffff; color: #111; }
+    body.amoled { background: #000000; color: #ffffff; }
 
-    #content {
-      transition: 0.3s ease;
-    }
+    code { background: #222; padding: 2px 5px; border-radius: 4px; }
+    pre { background: #1a1a1a; padding: 10px; border-radius: 8px; }
 
-    a { color:#4ea1ff; text-decoration:none; }
-    a:hover { text-decoration:underline; }
-
-    pre {
-      background:#1a1a1a;
-      padding:10px;
-      border-radius:8px;
-      overflow-x:auto;
-    }
-
-    code {
-      background:#222;
-      padding:2px 5px;
-      border-radius:4px;
-    }
+    a { color: #4ea1ff; }
 
     /* THEME BAR */
     .theme-bar {
@@ -49,56 +32,55 @@
       top: 15px;
       right: 15px;
       transform: scale(0.66);
-      transform-origin: top right;
     }
 
     .theme-pill {
-      display:flex;
-      gap:8px;
-      padding:4px;
-      border-radius:999px;
-      border:3px solid currentColor;
+      display: flex;
+      gap: 8px;
+      padding: 4px;
+      border-radius: 999px;
+      border: 3px solid currentColor;
     }
 
     .theme-pill button {
-      border:3px solid currentColor;
-      background:transparent;
-      padding:2px 9px;
-      border-radius:999px;
-      cursor:pointer;
-      font-size:12px;
-      font-weight:700;
-      color:inherit;
-      transition:0.3s;
+      border: 3px solid currentColor;
+      padding: 2px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      background: transparent;
+      color: inherit;
+      transition: all 0.3s ease;
     }
 
     .theme-pill button.active {
-      border-color:#4ea1ff;
-      color:#4ea1ff;
+      border-color: #4ea1ff;
+      color: #4ea1ff;
     }
 
-    /* STATUS TOP LEFT */
-    #status {
+    /* STATUS */
+    .sync-status {
       position: fixed;
       top: 15px;
       left: 15px;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: rgba(0,0,0,0.55);
-      color: white;
       font-size: 12px;
-      z-index: 9999;
-      font-family: Arial;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 2px solid currentColor;
     }
+
+    .synced { color: #4caf50; border-color: #4caf50; }
+    .updating { color: #ffb300; border-color: #ffb300; }
+    .outdated { color: #ff4e4e; border-color: #ff4e4e; }
   </style>
 </head>
 
 <body class="dark">
 
-<!-- STATUS -->
-<div id="status">🟡 INITIALIZING...</div>
+<div id="syncStatus" class="sync-status">⏳ LOADING...</div>
 
-<!-- THEME -->
 <div class="theme-bar">
   <div class="theme-pill">
     <button data-theme="dark" onclick="setTheme('dark')">DARK</button>
@@ -110,85 +92,87 @@
 <div id="content">Chargement...</div>
 
 <script>
-const TOKEN = "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";
+/* 🔑 TOKEN */
+const TOKEN = "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";
 
+/* ✅ BON ENDPOINT */
 const API_URL = "https://api.github.com/repos/Olaxee/BeijingDiscord/contents/Rules/Rules.md?ref=main";
 
+/* STATE */
 let lastSha = null;
 
-/* ------------------ BASE64 FIX ------------------ */
+const statusEl = document.getElementById("syncStatus");
+const contentEl = document.getElementById("content");
+
+function setStatus(type, text) {
+  statusEl.className = "sync-status " + type;
+  statusEl.textContent = text;
+}
+
+/* ✅ decode UTF-8 fiable */
 function decodeBase64(str) {
-  return decodeURIComponent(
-    atob(str)
-      .split('')
-      .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-      .join('')
-  );
+  const bytes = Uint8Array.from(atob(str), c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
-/* ------------------ STATUS ------------------ */
-function updateStatus(text) {
-  document.getElementById("status").innerText = text;
-}
-
-/* ------------------ LOAD MD ------------------ */
-async function loadMD() {
-  const res = await fetch(API_URL, {
-    headers: {
-      "Accept": "application/vnd.github.v3+json",
-      "Authorization": "Bearer " + TOKEN
-    }
-  });
-
-  const data = await res.json();
-
-  if (!data.content) {
-    updateStatus("🔴 ERROR: no content");
-    return;
-  }
-
-  const md = decodeBase64(data.content);
-  document.getElementById("content").innerHTML = marked.parse(md);
-
-  return data.sha;
-}
-
-/* ------------------ SYNC ENGINE ------------------ */
-async function sync() {
+async function syncFile() {
   try {
     const res = await fetch(API_URL, {
       headers: {
-        "Authorization": "Bearer " + TOKEN
+        "Authorization": "token " + TOKEN,
+        "Accept": "application/vnd.github+json"
       }
     });
 
     const data = await res.json();
 
-    if (!data.sha) {
-      updateStatus("🔴 API ERROR");
+    /* 🔥 DEBUG */
+    console.log("API RESPONSE:", data);
+
+    if (!res.ok) {
+      throw new Error(data.message || "API error");
+    }
+
+    if (!data.content) {
+      throw new Error("No content received");
+    }
+
+    const newSha = data.sha;
+
+    // premier load
+    if (!lastSha) {
+      const md = decodeBase64(data.content);
+      contentEl.innerHTML = marked.parse(md);
+      lastSha = newSha;
+      setStatus("synced", "🟢 SYNCED");
       return;
     }
 
-    if (lastSha !== data.sha) {
-      updateStatus("🟡 UPDATING nouveau commit...");
-
-      lastSha = data.sha;
+    // nouveau commit
+    if (newSha !== lastSha) {
+      setStatus("updating", "🟡 UPDATING...");
 
       const md = decodeBase64(data.content);
-      document.getElementById("content").innerHTML = marked.parse(md);
+      contentEl.innerHTML = marked.parse(md);
 
-      updateStatus("🟢 SYNCED");
+      lastSha = newSha;
+
+      setStatus("synced", "🟢 SYNCED");
     } else {
-      updateStatus("🟢 SYNCED");
+      setStatus("synced", "🟢 SYNCED");
     }
 
-  } catch (e) {
-    updateStatus("🔴 CONNECTION ERROR");
-    console.error(e);
+  } catch (err) {
+    console.error("ERROR:", err);
+    setStatus("outdated", "🔴 OUTDATED");
   }
 }
 
-/* ------------------ THEME ------------------ */
+/* LOOP */
+syncFile();
+setInterval(syncFile, 5000);
+
+/* THEME */
 function setTheme(theme) {
   document.body.classList.remove("dark", "light", "amoled");
   document.body.classList.add(theme);
@@ -196,23 +180,17 @@ function setTheme(theme) {
   localStorage.setItem("theme", theme);
 
   document.querySelectorAll(".theme-pill button")
-    .forEach(b => b.classList.remove("active"));
+    .forEach(btn => btn.classList.remove("active"));
 
   document.querySelector(`[data-theme="${theme}"]`)
     ?.classList.add("active");
 }
 
-/* ------------------ INIT ------------------ */
-(async function init() {
-  const saved = localStorage.getItem("theme") || "dark";
-  setTheme(saved);
+const saved = localStorage.getItem("theme") || "dark";
+document.body.classList.add(saved);
+document.querySelector(`[data-theme="${saved}"]`)
+  ?.classList.add("active");
 
-  await loadMD();
-  updateStatus("🟢 READY");
-
-  sync();
-  setInterval(sync, 3000);
-})();
 </script>
 
 </body>
