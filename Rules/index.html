@@ -58,6 +58,11 @@
       transition: all 0.35s ease;
     }
     
+    .theme-pill button.active {
+      border-color: #4ea1ff;
+      color: #4ea1ff;
+    }
+    
     body {
       font-family: Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
       max-width: 900px;
@@ -119,16 +124,29 @@
     // refresh auto toutes les 30s (optionnel)
     setInterval(loadReadme, 30000);
 
-    // js barre de thème
+    // /SETTHEME/ js barre de thème
     function setTheme(theme) {
       const body = document.body;
       
-      body.classList.remove("dark", "light", "amoled");
-      body.classList.add(theme);
+      // fade effect (optionnel mais clean)
+      body.style.opacity = "0.4";
+      
+      setTimeout(() => {
+        body.classList.remove("dark", "light", "amoled");
+        body.classList.add(theme);
       
       localStorage.setItem("theme", theme);
-      
       applyTheme(theme);
+        
+        // bouton actif
+        document.querySelectorAll(".theme-pill button")
+          .forEach(btn => btn.classList.remove("active"));
+        
+        document.querySelector(`.theme-pill button[onclick="setTheme('${theme}')"]`)
+          .classList.add("active");
+        
+        body.style.opacity = "1";
+      }, 120);
     }
     
     function applyTheme(theme) {
@@ -150,10 +168,10 @@
       }
     }
     
-    // load saved theme
+    // /LOAD/ load saved theme
     const saved = localStorage.getItem("theme") || "dark";
     setTheme(saved);
-  
+    
   </script>
 </body>
 </html>
