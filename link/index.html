@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Copier</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0f0f0f;
+      font-family: Arial, sans-serif;
+    }
+
+    button {
+      padding: 20px 40px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: #4ea1ff;
+      color: white;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: #2f8fff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button onclick="copyAndExit()">Copier</button>
+
+  <script>
+    async function copyAndExit() {
+      const text = "discord.gg/8xBBW975VX";
+
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        // fallback si clipboard bloque
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+
+      // essaie de fermer la page
+      window.close();
+
+      // fallback si fermeture bloquée
+      setTimeout(() => {
+        history.back();
+      }, 300);
+    }
+  </script>
+
+</body>
+</html>
