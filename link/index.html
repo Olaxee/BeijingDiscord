@@ -60,13 +60,11 @@
       transition: all 0.4s ease;
     }
 
-    /* entrée */
     .toast.show {
       bottom: 30px;
       opacity: 1;
     }
 
-    /* sortie */
     .toast.hide {
       bottom: -80px;
       opacity: 0;
@@ -76,12 +74,24 @@
 
 <body>
 
-<button onclick="copyAndToast()">Copier</button>
+<button onclick="copyAndExit()">Copier</button>
 
 <div id="toast" class="toast">Lien copié</div>
 
 <script>
-  async function copyAndToast() {
+  const toast = document.getElementById("toast");
+
+  // si on revient (back), on force état invisible direct
+  window.addEventListener("pageshow", () => {
+    const returned = sessionStorage.getItem("returned");
+
+    if (returned === "1") {
+      toast.classList.remove("show");
+      toast.classList.add("hide");
+    }
+  });
+
+  async function copyAndExit() {
     const text = "discord.gg/8xBBW975VX";
 
     try {
@@ -95,30 +105,24 @@
       ta.remove();
     }
 
-    const toast = document.getElementById("toast");
+    // reset retour state
+    sessionStorage.setItem("returned", "0");
 
-    // entrée
+    // animation entrée
     toast.classList.remove("hide");
     toast.classList.add("show");
 
-    // attendre 2s
+    // attendre 1.5s puis fermer
     setTimeout(() => {
+      sessionStorage.setItem("returned", "1");
 
-      // animation sortie
-      toast.classList.remove("show");
-      toast.classList.add("hide");
+      window.close();
 
-      // attendre fin animation puis fermer
       setTimeout(() => {
-        window.close();
+        history.back();
+      }, 200);
 
-        setTimeout(() => {
-          history.back();
-        }, 200);
-
-      }, 400); // durée animation sortie
-
-    }, 2000);
+    }, 1500);
   }
 </script>
 
