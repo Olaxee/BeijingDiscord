@@ -44,7 +44,7 @@
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: 30px;
+      bottom: -80px;
 
       background: #00a62c;
       border: 2px solid #1bf254;
@@ -54,11 +54,13 @@
       border-radius: 999px;
 
       font-weight: bold;
+
       opacity: 0;
-      transition: 0.3s;
+      transition: all 0.4s ease;
     }
 
     .toast.show {
+      bottom: 30px;
       opacity: 1;
     }
   </style>
@@ -85,10 +87,9 @@
       ta.remove();
     }
 
-    // afficher popup (elle reste)
-    document.getElementById("toast").classList.add("show");
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
 
-    // attendre 2s puis fermer
     setTimeout(() => {
       window.close();
 
