@@ -39,12 +39,14 @@
       transform: scale(0.98);
     }
 
-    /* Toast */
+    /* TOAST */
     .toast {
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
+
       bottom: -80px;
+      opacity: 0;
 
       background: #00a62c;
       border: 2px solid #1bf254;
@@ -55,13 +57,19 @@
 
       font-weight: bold;
 
-      opacity: 0;
       transition: all 0.4s ease;
     }
 
+    /* entrée */
     .toast.show {
       bottom: 30px;
       opacity: 1;
+    }
+
+    /* sortie */
+    .toast.hide {
+      bottom: -80px;
+      opacity: 0;
     }
   </style>
 </head>
@@ -88,14 +96,27 @@
     }
 
     const toast = document.getElementById("toast");
+
+    // entrée
+    toast.classList.remove("hide");
     toast.classList.add("show");
 
+    // attendre 2s
     setTimeout(() => {
-      window.close();
 
+      // animation sortie
+      toast.classList.remove("show");
+      toast.classList.add("hide");
+
+      // attendre fin animation puis fermer
       setTimeout(() => {
-        history.back();
-      }, 200);
+        window.close();
+
+        setTimeout(() => {
+          history.back();
+        }, 200);
+
+      }, 400); // durée animation sortie
 
     }, 2000);
   }
