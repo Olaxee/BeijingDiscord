@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Copier</title>
+
   <style>
     body {
       margin: 0;
@@ -14,53 +15,94 @@
       font-family: Arial, sans-serif;
     }
 
-    button {
-      padding: 20px 40px;
-      font-size: 18px;
-      border: none;
-      border-radius: 12px;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+
+      padding: 10px 16px;
+      border-radius: 8px;
+
+      border: 1px solid #30363d;
+      background: #161b22;
+      color: #e6edf3;
+
+      font-size: 14px;
+      font-weight: 500;
+
       cursor: pointer;
-      background: #4ea1ff;
-      color: white;
-      transition: 0.2s;
+      transition: 0.15s ease;
+      user-select: none;
     }
 
-    button:hover {
-      transform: scale(1.05);
-      background: #2f8fff;
+    .btn:hover {
+      background: #1f242c;
+      border-color: #3a3f46;
+    }
+
+    .icon {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .divider {
+      width: 1px;
+      height: 16px;
+      background: #30363d;
+      margin: 0 2px;
     }
   </style>
 </head>
 
 <body>
 
-  <button onclick="copyAndExit()">Copier</button>
+<button class="btn" onclick="copyAndExit()">
+  <span class="icon">
+    <!-- plus icon -->
+    <svg viewBox="0 0 16 16">
+      <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"/>
+    </svg>
 
-  <script>
-    async function copyAndExit() {
-      const text = "discord.gg/8xBBW975VX";
+    Copier
+  </span>
 
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch (e) {
-        // fallback si clipboard bloque
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-      }
+  <span class="divider"></span>
 
-      // essaie de fermer la page
-      window.close();
+  <!-- dropdown arrow -->
+  <svg viewBox="0 0 16 16">
+    <path d="m4.427 7.427 3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"/>
+  </svg>
+</button>
 
-      // fallback si fermeture bloquée
-      setTimeout(() => {
-        history.back();
-      }, 300);
+<script>
+  async function copyAndExit() {
+    const text = "discord.gg/8xBBW975VX";
+
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
     }
-  </script>
+
+    window.close();
+
+    setTimeout(() => {
+      history.back();
+    }, 300);
+  }
+</script>
 
 </body>
 </html>
