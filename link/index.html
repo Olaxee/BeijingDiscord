@@ -15,19 +15,22 @@
       font-family: Arial, sans-serif;
     }
 
+    /* BOUTON PRINCIPAL */
     button {
-      padding: 18px 34px;
+      padding: 14px 26px; /* moins large + proportionnel */
       font-size: 18px;
       font-weight: bold;
 
-      border: 1px solid #30363d;
       border-radius: 999px;
 
+      border: 2px solid #1bf254; /* même épaisseur que toast */
       background: #161b22;
       color: #e6edf3;
 
       cursor: pointer;
       transition: 0.2s;
+
+      line-height: 1; /* hauteur propre centrée */
     }
 
     button:hover {
@@ -81,7 +84,6 @@
 <script>
   const toast = document.getElementById("toast");
 
-  // si on revient (back), on force état invisible direct
   window.addEventListener("pageshow", () => {
     const returned = sessionStorage.getItem("returned");
 
@@ -105,14 +107,11 @@
       ta.remove();
     }
 
-    // reset retour state
     sessionStorage.setItem("returned", "0");
 
-    // animation entrée
     toast.classList.remove("hide");
     toast.classList.add("show");
 
-    // attendre 1.5s puis fermer
     setTimeout(() => {
       sessionStorage.setItem("returned", "1");
 
