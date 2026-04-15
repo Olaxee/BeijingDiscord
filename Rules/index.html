@@ -16,7 +16,6 @@
       max-width: 900px;
       margin: auto;
       padding: 20px;
-
       transition: background-color 0.35s ease, color 0.35s ease;
     }
 
@@ -44,6 +43,7 @@
     a { color: #4ea1ff; text-decoration: none; }
     a:hover { text-decoration: underline; }
 
+    /* THEME BAR (droite) */
     .theme-bar {
       position: fixed;
       top: 15px;
@@ -78,11 +78,52 @@
       border-color: #4ea1ff;
       color: #4ea1ff;
     }
+
+    /* 🔥 SYNC STATUS (haut gauche) */
+    .sync-status {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 9999;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      padding: 6px 10px;
+      border-radius: 999px;
+
+      border: 2px solid currentColor;
+      background: rgba(0,0,0,0.2);
+
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .sync-status.synced {
+      color: #4caf50;
+      border-color: #4caf50;
+    }
+
+    .sync-status.updating {
+      color: #ffb300;
+      border-color: #ffb300;
+    }
+
+    .sync-status.outdated {
+      color: #ff4e4e;
+      border-color: #ff4e4e;
+    }
   </style>
 </head>
 
 <body class="dark">
 
+  <!-- SYNC STATUS -->
+  <div id="syncStatus" class="sync-status synced">
+    🟢 SYNCED
+  </div>
+
+  <!-- THEME BAR -->
   <div class="theme-bar">
     <div class="theme-pill">
       <button data-theme="dark" onclick="setTheme('dark')">DARK</button>
@@ -97,70 +138,80 @@
     const url = "https://raw.githubusercontent.com/Olaxee/BeijingDiscord/refs/heads/main/Rules/Rules.md";
 
     let lastETag = null;
-    let lastContentHash = null;
+    let lastHash = null;
     let controller = null;
+
+    const statusEl = document.getElementById("syncStatus");
+
+    function setStatus(type, text) {
+      statusEl.className = "sync-status " + type;
+      statusEl.textContent = text;
+    }
 
     async function loadReadme() {
       try {
-        // annule requête précédente si encore en cours
         if (controller) controller.abort();
         controller = new AbortController();
 
         const headers = {};
-
-        // 🔥 cache intelligent GitHub
-        if (lastETag) {
-          headers["If-None-Match"] = lastETag;
-        }
+        if (lastETag) headers["If-None-Match"] = lastETag;
 
         const res = await fetch(url, {
           signal: controller.signal,
           headers
         });
 
-        // 🔥 rien n’a changé
-        if (res.status === 304) return;
+        if (res.status === 304) {
+          setStatus("synced", "🟢 SYNCED");
+          return;
+        }
 
         const etag = res.headers.get("ETag");
-
         const md = await res.text();
 
-        // petit hash simple pour éviter re-render inutile
+        // hash simple
         let hash = 0;
         for (let i = 0; i < md.length; i++) {
           hash = (hash * 31 + md.charCodeAt(i)) >>> 0;
         }
 
-        if (hash === lastContentHash) return;
+        // pas de changement
+        if (hash === lastHash) {
+          setStatus("synced", "🟢 SYNCED");
+          return;
+        }
 
-        lastContentHash = hash;
+        // changement détecté
+        setStatus("updating", "🟡 UPDATING...");
+
+        lastHash = hash;
         lastETag = etag;
 
         document.getElementById("content").innerHTML = marked.parse(md);
 
+        setStatus("synced", "🟢 SYNCED");
+
       } catch (e) {
-        // ignore abort errors
+        if (e.name !== "AbortError") {
+          setStatus("outdated", "🔴 OUTDATED");
+        }
       }
     }
 
     loadReadme();
-
-    // 🔥 sync plus rapide mais stable
     setInterval(loadReadme, 8000);
 
     function setTheme(theme) {
-      const body = document.body;
-
-      body.classList.remove("dark", "light", "amoled");
-      body.classList.add(theme);
+      document.body.classList.remove("dark", "light", "amoled");
+      document.body.classList.add(theme);
 
       localStorage.setItem("theme", theme);
 
       document.querySelectorAll(".theme-pill button")
         .forEach(btn => btn.classList.remove("active"));
 
-      const activeBtn = document.querySelector(`.theme-pill button[data-theme="${theme}"]`);
-      if (activeBtn) activeBtn.classList.add("active");
+      document.querySelector(`.theme-pill button[data-theme="${theme}"]`)
+        ?.classList.add("active");
     }
 
     const saved = localStorage.getItem("theme") || "dark";
