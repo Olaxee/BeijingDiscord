@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Copier</title>
 
   <style>
@@ -17,19 +17,17 @@
 
     button {
       padding: 18px 34px;
-
-      border-radius: 999px; /* forme gélule */
+      font-size: 18px;
+      font-weight: bold;
 
       border: 1px solid #30363d;
+      border-radius: 999px;
+
       background: #161b22;
       color: #e6edf3;
 
-      font-size: 18px;
-      font-weight: bold;
-      font-family: Arial, sans-serif;
-
       cursor: pointer;
-      transition: 0.15s;
+      transition: 0.2s;
     }
 
     button:hover {
@@ -40,15 +38,42 @@
     button:active {
       transform: scale(0.98);
     }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -80px;
+
+      background: #00a62c;
+      border: 2px solid #1bf254;
+      color: white;
+
+      padding: 12px 22px;
+      border-radius: 999px;
+
+      font-weight: bold;
+
+      opacity: 0;
+      transition: 0.4s ease;
+    }
+
+    .toast.show {
+      bottom: 30px;
+      opacity: 1;
+    }
   </style>
 </head>
 
 <body>
 
-<button onclick="copyAndExit()">Copier</button>
+<button onclick="copyAndToast()">Copier</button>
+
+<div id="toast" class="toast">Lien copié</div>
 
 <script>
-  async function copyAndExit() {
+  async function copyAndToast() {
     const text = "discord.gg/8xBBW975VX";
 
     try {
@@ -62,11 +87,21 @@
       ta.remove();
     }
 
-    window.close();
+    // afficher popup
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
 
+    // après 1 seconde -> fermer / retour
     setTimeout(() => {
-      history.back();
-    }, 300);
+      toast.classList.remove("show");
+
+      window.close();
+
+      setTimeout(() => {
+        history.back();
+      }, 200);
+
+    }, 1000);
   }
 </script>
 
