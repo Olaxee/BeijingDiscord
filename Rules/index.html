@@ -20,21 +20,9 @@
       transition: background-color 0.35s ease, color 0.35s ease;
     }
 
-    /* THEMES */
-    body.dark {
-      background: #0f0f0f;
-      color: white;
-    }
-
-    body.light {
-      background: #ffffff;
-      color: #111;
-    }
-
-    body.amoled {
-      background: #000000;
-      color: #ffffff;
-    }
+    body.dark { background: #0f0f0f; color: white; }
+    body.light { background: #ffffff; color: #111; }
+    body.amoled { background: #000000; color: #ffffff; }
 
     #content {
       transition: background-color 0.35s ease, color 0.35s ease;
@@ -53,16 +41,9 @@
       border-radius: 8px;
     }
 
-    a {
-      color: #4ea1ff;
-      text-decoration: none;
-    }
+    a { color: #4ea1ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* THEME BAR */
     .theme-bar {
       position: fixed;
       top: 15px;
@@ -84,16 +65,12 @@
     .theme-pill button {
       border: 3px solid currentColor;
       background: transparent;
-
       padding: 2px 9px;
       border-radius: 999px;
-
       cursor: pointer;
-
       font-size: 12px;
       font-weight: 700;
       color: inherit;
-
       transition: all 0.35s ease;
     }
 
@@ -119,25 +96,66 @@
   <script>
     const url = "https://raw.githubusercontent.com/Olaxee/BeijingDiscord/refs/heads/main/Rules/Rules.md";
 
+    let lastETag = null;
+    let lastContentHash = null;
+    let controller = null;
+
     async function loadReadme() {
-      const res = await fetch(url + "?t=" + Date.now());
-      const md = await res.text();
-      document.getElementById("content").innerHTML = marked.parse(md);
+      try {
+        // annule requête précédente si encore en cours
+        if (controller) controller.abort();
+        controller = new AbortController();
+
+        const headers = {};
+
+        // 🔥 cache intelligent GitHub
+        if (lastETag) {
+          headers["If-None-Match"] = lastETag;
+        }
+
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers
+        });
+
+        // 🔥 rien n’a changé
+        if (res.status === 304) return;
+
+        const etag = res.headers.get("ETag");
+
+        const md = await res.text();
+
+        // petit hash simple pour éviter re-render inutile
+        let hash = 0;
+        for (let i = 0; i < md.length; i++) {
+          hash = (hash * 31 + md.charCodeAt(i)) >>> 0;
+        }
+
+        if (hash === lastContentHash) return;
+
+        lastContentHash = hash;
+        lastETag = etag;
+
+        document.getElementById("content").innerHTML = marked.parse(md);
+
+      } catch (e) {
+        // ignore abort errors
+      }
     }
 
     loadReadme();
-    setInterval(loadReadme, 30000);
+
+    // 🔥 sync plus rapide mais stable
+    setInterval(loadReadme, 8000);
 
     function setTheme(theme) {
       const body = document.body;
 
-      // switch theme
       body.classList.remove("dark", "light", "amoled");
       body.classList.add(theme);
 
       localStorage.setItem("theme", theme);
 
-      // active button
       document.querySelectorAll(".theme-pill button")
         .forEach(btn => btn.classList.remove("active"));
 
@@ -145,7 +163,6 @@
       if (activeBtn) activeBtn.classList.add("active");
     }
 
-    // init theme SANS animation (important pour éviter le flicker)
     const saved = localStorage.getItem("theme") || "dark";
     document.body.classList.add(saved);
 
