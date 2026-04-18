@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Color Name</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div id="content"></div>
+
+<script>
+// Récupère le prénom dans l'URL
+let name = window.location.pathname.slice(1).toLowerCase();
+if (!name) name = "default";
+
+// Hash simple (ASCII sum + variation)
+function hashName(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  let r = (hash >> 0) & 255;
+  let g = (hash >> 8) & 255;
+  let b = (hash >> 16) & 255;
+
+  return { r, g, b };
+}
+
+// Calcul couleur
+const color = hashName(name);
+const rgb = `rgb(${color.r}, ${color.g}, ${color.b})`;
+
+// Déterminer noir ou blanc selon luminosité
+const brightness = (color.r * 299 + color.g * 587 + color.b * 114) / 1000;
+const textColor = brightness > 140 ? "black" : "white";
+
+// Appliquer style
+document.body.style.background = rgb;
+document.body.style.color = textColor;
+
+// Affichage
+document.getElementById("content").innerHTML = `
+  <div style="font-size: 50px;">
+    ${name}
+  </div>
+`;
+</script>
+
+</body>
+</html>
