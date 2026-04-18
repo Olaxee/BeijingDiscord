@@ -53,23 +53,25 @@
 
     .input-row {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       border: 1.5px solid rgba(255,255,255,0.15);
-      border-radius: 6px;
-      overflow: hidden;
-      width: min(380px, 90vw);
-      transition: border-color 0.2s;
+      border-radius: 10px;
+      width: min(460px, 92vw);
+      transition: border-color 0.25s;
+      background: rgba(255,255,255,0.03);
     }
-    .input-row:focus-within { border-color: rgba(255,255,255,0.5); }
+    .input-row:focus-within { border-color: rgba(255,255,255,0.45); }
 
     .url-prefix {
-      padding: 0.75rem 0.9rem;
+      padding: 0.85rem 1rem;
       font-family: 'Space Mono', monospace;
-      font-size: 0.78rem;
-      opacity: 0.35;
+      font-size: 0.72rem;
+      opacity: 0.3;
       white-space: nowrap;
       user-select: none;
-      border-right: 1.5px solid rgba(255,255,255,0.1);
+      border-right: 1.5px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
     }
 
     #nameInput {
@@ -79,23 +81,28 @@
       outline: none;
       color: #fff;
       font-family: 'Space Mono', monospace;
-      font-size: 0.95rem;
-      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      padding: 0.85rem 1rem;
+      min-width: 0;
     }
-    #nameInput::placeholder { opacity: 0.25; }
+    #nameInput::placeholder { opacity: 0.2; }
 
     #goBtn {
       background: #fff;
       color: #000;
       border: none;
-      padding: 0.75rem 1.2rem;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.8rem;
+      border-radius: 0 8px 8px 0;
+      padding: 0 1.3rem;
       cursor: pointer;
-      transition: opacity 0.15s;
-      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.15s;
     }
-    #goBtn:hover { opacity: 0.85; }
+    #goBtn:hover { background: #e0e0e0; }
+    #goBtn:active { transform: scale(0.96); }
+    #goBtn svg { width: 18px; height: 18px; display: block; }
 
     /* ── COLOR STATE ── */
     #colorPage {
@@ -217,7 +224,11 @@
     <div class="input-row">
       <span class="url-prefix">yoursite.com/</span>
       <input id="nameInput" type="text" placeholder="prénom" autocomplete="off" spellcheck="false" />
-      <button id="goBtn" onclick="goToName()">→</button>
+      <button id="goBtn" onclick="goToName()" aria-label="Go">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 9h12M10 4l5 5-5 5" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </div>
 
