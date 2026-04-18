@@ -300,13 +300,14 @@
 
     // ── ROUTING ─────────────────────────────────────────────
     const BASE = '/colors'; // dossier Vercel — change si besoin
+    const RESERVED = ['preview']; // chemins réservés à exclure
 
     function getNameFromURL() {
       // Strip le base path : /colors/leo → "leo", /colors → null
       let path = window.location.pathname;
       if (path.startsWith(BASE)) path = path.slice(BASE.length);
       path = path.replace(/^\//, '').trim();
-      if (path && path !== 'index.html') return decodeURIComponent(path);
+      if (path && path !== 'index.html' && !RESERVED.includes(path.toLowerCase())) return decodeURIComponent(path);
 
       const params = new URLSearchParams(window.location.search);
       if (params.get('name')) return params.get('name');
