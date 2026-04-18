@@ -18,7 +18,8 @@ function getLuminance(r, g, b) {
 
 // récupère le prénom depuis l’URL
 const path = window.location.pathname;
-const name = path.split("/").filter(Boolean)[1] || "default";
+const parts = window.location.pathname.split("/").filter(Boolean);
+const name = parts[parts.length - 1] || "default";
 
 const { r, g, b } = stringToColor(name);
 const color = `rgb(${r}, ${g}, ${b})`;
