@@ -300,7 +300,7 @@
 
     // ── ROUTING ─────────────────────────────────────────────
     const BASE = '/colors'; // dossier Vercel — change si besoin
-    const RESERVED = ['preview']; // chemins réservés à exclure
+    const RESERVED = ['preview', `readme`]; // chemins réservés à exclure
 
     function getNameFromURL() {
       // Strip le base path : /colors/leo → "leo", /colors → null
