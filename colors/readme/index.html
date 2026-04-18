@@ -28,6 +28,11 @@
       transition: background-color 0.35s ease, color 0.35s ease;
     }
 
+    #content img {
+      width: 50%;
+      height: auto;
+    }
+
     code {
       background: #222;
       padding: 2px 5px;
@@ -118,7 +123,7 @@
           headers
         });
 
-        // 🔥 rien n’a changé
+        // 🔥 rien n'a changé
         if (res.status === 304) return;
 
         const etag = res.headers.get("ETag");
@@ -172,4 +177,3 @@
 
 </body>
 </html>
-
