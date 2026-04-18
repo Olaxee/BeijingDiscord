@@ -1,8 +1,0 @@
-{
-  "routes": [
-    {
-      "src": "/colors/(.*)",
-      "dest": "/index.html"
-    }
-  ]
-}
