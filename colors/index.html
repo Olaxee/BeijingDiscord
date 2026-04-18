@@ -288,16 +288,17 @@
     }
 
     // ── ROUTING ─────────────────────────────────────────────
+    const BASE = '/colors'; // dossier Vercel — change si besoin
+
     function getNameFromURL() {
-      // Support /leo  OR  /?name=leo  OR  /#leo
-      const path = window.location.pathname.replace(/^\//, '').trim();
+      // Strip le base path : /colors/leo → "leo", /colors → null
+      let path = window.location.pathname;
+      if (path.startsWith(BASE)) path = path.slice(BASE.length);
+      path = path.replace(/^\//, '').trim();
       if (path && path !== 'index.html') return decodeURIComponent(path);
 
       const params = new URLSearchParams(window.location.search);
       if (params.get('name')) return params.get('name');
-
-      const hash = window.location.hash.replace(/^#/, '').trim();
-      if (hash) return decodeURIComponent(hash);
 
       return null;
     }
@@ -305,12 +306,12 @@
     function goToName() {
       const val = document.getElementById('nameInput').value.trim();
       if (!val) return;
-      history.pushState({}, '', '/' + encodeURIComponent(val));
+      history.pushState({}, '', BASE + '/' + encodeURIComponent(val));
       showColor(val);
     }
 
     function goHome() {
-      history.pushState({}, '', '/');
+      history.pushState({}, '', BASE);
       document.getElementById('colorPage').classList.remove('visible');
       document.getElementById('home').style.display = 'flex';
       document.getElementById('nameInput').value = '';
