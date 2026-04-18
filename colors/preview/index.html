@@ -1,10 +1,27 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html style="height: 100%;">
 <head>
-  <meta charset="UTF-8">
-  <title>Preview</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=0.1">
+  <title>preview.png (1920×1080)</title>
+  <style>
+    body {
+      transition: opacity ease-in 0.2s;
+    }
+
+    body[unresolved] {
+      opacity: 0;
+      display: block;
+      overflow: hidden;
+      position: relative;
+    }
+  </style>
 </head>
-<body>
-  <img src="preview.png" alt="Preview">
+<body style="margin: 0px; height: 100%; background-color: rgb(14, 14, 14);">
+  <img
+    style="display: block; -webkit-user-select: none; margin: auto; cursor: zoom-in; background-color: hsl(0, 0%, 90%); transition: background-color 300ms;"
+    src="https://beijingg.vercel.app/colors/preview/preview.png"
+    width="1007"
+    height="567"
+  >
 </body>
 </html>
