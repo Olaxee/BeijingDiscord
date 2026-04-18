@@ -1,5 +1,8 @@
 {
-  "rewrites": [
-    { "source": "/colors/(.*)", "destination": "/index.html" }
+  "routes": [
+    {
+      "src": "/colors/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
