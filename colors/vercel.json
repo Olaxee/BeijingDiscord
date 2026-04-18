@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/colors/(.*)", "destination": "/colors/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
