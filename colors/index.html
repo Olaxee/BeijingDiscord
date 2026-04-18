@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Color Name</title>
+  <title>Colors Names</title>
+
   <style>
     body {
       margin: 0;
@@ -12,47 +13,66 @@
       align-items: center;
       font-family: Arial, sans-serif;
       font-weight: bold;
+      transition: background 0.5s ease;
     }
   </style>
 </head>
-<body>
 
+<body>
 <div id="content"></div>
 
 <script>
-// Récupère le prénom dans l'URL
-let name = window.location.pathname.slice(1).toLowerCase();
+// ===============================
+// 1. Récupération du prénom
+// ===============================
+
+// URL = /colors/leo
+const pathParts = window.location.pathname.split("/");
+
+// pathParts = ["", "colors", "leo"]
+let name = pathParts[2]; // 👈 IMPORTANT
+
 if (!name) name = "default";
 
-// Hash simple (ASCII sum + variation)
+name = decodeURIComponent(name.toLowerCase());
+
+// ===============================
+// 2. Hash -> couleur RGB
+// ===============================
 function hashName(str) {
   let hash = 0;
+
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
 
-  let r = (hash >> 0) & 255;
-  let g = (hash >> 8) & 255;
-  let b = (hash >> 16) & 255;
+  const r = (hash >> 0) & 255;
+  const g = (hash >> 8) & 255;
+  const b = (hash >> 16) & 255;
 
   return { r, g, b };
 }
 
-// Calcul couleur
 const color = hashName(name);
 const rgb = `rgb(${color.r}, ${color.g}, ${color.b})`;
 
-// Déterminer noir ou blanc selon luminosité
+// ===============================
+// 3. Couleur texte (contraste)
+// ===============================
 const brightness = (color.r * 299 + color.g * 587 + color.b * 114) / 1000;
 const textColor = brightness > 140 ? "black" : "white";
 
-// Appliquer style
+// ===============================
+// 4. Application style
+// ===============================
 document.body.style.background = rgb;
 document.body.style.color = textColor;
 
-// Affichage
+// ===============================
+// 5. Affichage
+// ===============================
 document.getElementById("content").innerHTML = `
-  <div style="font-size: 50px;">
+  <div style="font-size: 60px;">
     ${name}
   </div>
 `;
